@@ -105,7 +105,13 @@ def einordnen(mail: str, versuche: int = 3,
         try:
             return klasse.model_validate_json(roh, context={"mail": mail})
         except ValidationError as fehler:
-            print(f"  versuch {versuch}/{versuche} ungültig: {fehler.error_count()} fehler")
+            abgeschnitten = " (bei max_tokens abgeschnitten)" if antwort.choices[0].finish_reason == "length" else ""
+            print(f"  versuch {versuch}/{versuche} ungültig{abgeschnitten}: {fehler.error_count()} fehler")
+            # bei temperature 0 käme sonst genau dieselbe antwort nochmal, deshalb antwort + fehler mitschicken
+            nachricht += [
+                {"role": "assistant", "content": roh},
+                {"role": "user", "content": f"Die Antwort war ungültig:\n{fehler}\nAntworte nur mit dem korrigierten JSON."},
+            ]
     raise RuntimeError(f"nach {versuche} versuchen immer noch keine gültige antwort, abbruch")
 
 
