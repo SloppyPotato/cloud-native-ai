@@ -30,16 +30,17 @@ SYSTEM_PROMPT = (
 STUDIENGAENGE = {"AIN", "WIN", "GIB", "MSI", "BIT"}
 
 
-# kleinschreiben und satzzeichen raus, sonst scheitert "Montag, 26.10." an "Montag 26.10."
-# punkte bleiben drin wegen datum
+# kleinschreiben, satzzeichen raus und punkte am wortende weg: "Freitag, 16.10.?" -> "freitag 16.10"
+# sonst würde "Montag, 26.10." nicht zu "Montag 26.10." passen
 def klein(text: str) -> str:
-    return " ".join(re.sub(r"[^\w.]+", " ", text.lower()).split())
+    woerter = re.sub(r"[^\w.]+", " ", text.lower()).split()
+    return " ".join(w.rstrip(".") for w in woerter if w.rstrip("."))
 
 
-# punkt am ende egal, und nur ganze wörter zählen ("6.10." soll nicht in "16.10." gefunden werden)
+# leerzeichen drumrum, damit nur ganze wörter zählen ("6.10." soll nicht in "16.10." gefunden werden)
 def steht_in(teil: str, mail: str) -> bool:
-    teil = klein(teil).rstrip(".")
-    return bool(teil) and re.search(rf"(?<!\w){re.escape(teil)}(?!\w)", klein(mail)) is not None
+    teil = klein(teil)
+    return teil != "" and f" {teil} " in f" {klein(mail)} "
 
 
 class AnfrageOhneZusatz(BaseModel):
@@ -67,7 +68,9 @@ class Anfrage(AnfrageOhneZusatz):
     @classmethod
     def frist_muss_in_mail_stehen(cls, wert, info: ValidationInfo):
         mail = (info.context or {}).get("mail")
-        if wert and mail and not steht_in(wert, mail):
+        if wert and mail is None:
+            print("  warnung: keine mail mitgegeben, frist konnte nicht geprüft werden")
+        elif wert and not steht_in(wert, mail):
             print(f"  warnung: frist {wert!r} steht nicht in der mail, wird None")
             return None
         return wert
