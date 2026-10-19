@@ -128,3 +128,36 @@ Ein erneuter versuch bringt bei T 0 nix: gleiche eingabe und immer das wahrschei
 - ein beispiel-json in den prompt schreiben oder codeblöcke im code wegschneiden
 
 Am sinnvollsten ist aber einfach response_format, das ist jetzt auch wieder drin.
+
+## Zusatz - Ausgaben absichern
+
+Auch in `app/einordnen.py`:
+- `Anfrage` hat jetzt `field_validator`s: `"null"`, `"None"` und `""` werden bei studiengang und frist zu echtem `None`.
+- studiengang ist nur gültig, wenn das kürzel in `STUDIENGAENGE` steht (AIN, WIN, GIB, MSI, BIT, also die studiengänge der fakultät informatik), sonst `None`. "ain" wird zu "AIN".
+- die frist wird im code gegen die mail geprüft: steht sie nicht in der mail, gibts eine warnung und sie wird `None`. Groß/klein, kommas usw. und ein punkt am ende sind dabei egal, es zählen aber nur ganze wörter (sonst würde z. b. "6.10." in "16.10." gefunden).
+- `auswerten()` fragt das modell pro mail nur einmal und bewertet dieselbe antwort einmal ohne prüfungen (`AnfrageOhneZusatz`, so wie vorgegeben) und einmal mit. So hängt der vergleich nicht von zwei verschiedenen modellantworten ab.
+
+Alle drei felder richtig (anliegen und studiengang exakt, frist richtig wenn die erwartete frist im ergebnis enthalten ist, bzw. `None` wenn keine erwartet wird):
+
+| Modell | vorher | nachher |
+|---|---|---|
+| llama3.2:3b | 4 von 8 | 7 von 8 |
+| qwen2.5:0.5b | 0 von 8 | 0 von 8 |
+
+Bei llama werden die zwei "null"-fälle und die erfundene frist (`bis zum 15.04.2024`) repariert. Übrig bleibt nur die IEEE-mail, wo schon das anliegen falsch ist. Bei qwen bringt es nix, da ist fast immer schon anliegen oder studiengang falsch. Die validatoren können nur offensichtlichen müll rauswerfen, aber keinen falschen gültigen wert korrigieren (AIN statt MSI ist halt ein gültiges kürzel). Und der frist-check schaut nur ob der text in der mail vorkommt, `3. Semester` als frist geht deshalb durch.
+
+Beim testen mit einer eigenen mail ("... Anmeldeschluss ist doch Montag 26.10. oder?") ist uns noch aufgefallen, dass das modell "Montag, 26.10." mit komma zurückgibt. Mit einem stumpfen textvergleich wäre die richtige frist rausgeflogen. Deshalb werden kommas und andere satzzeichen beim vergleich ignoriert (nur punkte im datum nicht).
+
+## Reflexion
+
+**Warum steht das Modell in .env und nicht im Code?**
+Damit das modell ein austauschbarer baustein bleibt. Modell wechseln oder von lokal auf cloud gehen ist dann nur config, kein code ändern und kein neuer build (haben wir in teil 2 ja so gemacht). Außerdem gehört der API-key nicht ins repo, und die `.env` ist in der `.gitignore`.
+
+**Welche Temperature in einordnen.py und warum?**
+0. Wir wollen nur daten aus der mail rausziehen, da soll nix kreatives passieren. Bei 0 wird immer das wahrscheinlichste token genommen, dadurch ist das ergebnis praktisch reproduzierbar (bitgenau garantiert ist es nicht, siehe teil 3) und die auswertung vergleichbar. Nachteil: ein neuer versuch bringt bei 0 meistens genau dieselbe antwort.
+
+**Was garantiert response_format mit Schema, und was nicht?**
+Es garantiert die form: gültiges JSON mit den feldern aus dem schema, den richtigen typen und bei `anliegen` nur die erlaubten werte (ollama schränkt dafür die ausgabe schon beim generieren ein). Es garantiert nicht, dass der inhalt stimmt. Falsches anliegen, `"null"` als text oder eine erfundene frist gehen also trotzdem durch. Und das klappt natürlich nur, wenn der anbieter das schema auch unterstützt.
+
+**Lokales Modell oder Cloud?**
+Lokal: wenn datenschutz wichtig ist (die mails von studis verlassen den rechner nicht) und wenn man unabhängig sein will, also keine kosten pro token und es läuft auch wenn der dienst down ist oder kein internet da ist. Cloud: wenn man ein großes modell braucht, die kleinen lokalen modelle machen einfach viele fehler (siehe teil 2). Und wenn man keine eigene GPU-hardware hat bzw. sich nicht selbst ums betreiben und skalieren kümmern will.
