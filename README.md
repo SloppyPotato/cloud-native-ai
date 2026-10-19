@@ -13,7 +13,7 @@ Die `.env` ist einfach eine kopie der `.env.example`, da muss man nix ändern. D
 
 ## Teil 1 - Setup
 
-Es laufen drei container: `ollama` ist der modellserver mit einer OpenAI-kompatiblen API unter `/v1` (port 11434), die modelle liegen im volume `ollama-modelle`. `modell-laden` läuft nur einmal, sagt dem ollama-server über `OLLAMA_HOST=ollama:11434` dass er `llama3.2:3b` und `qwen2.5:0.5b` runterladen soll und beendet sich dann. `app` ist unser python-container und startet erst, wenn `modell-laden` erfolgreich durch ist. Das modell findet die app nur über die `.env`: `LLM_BASE_URL=http://ollama:11434/v1` sagt wo der server ist (den namen `ollama` löst docker im compose-netz auf) und `LLM_MODEL` welches modell, im code steht keins.
+Es laufen drei container: `ollama` (der modellserver mit OpenAI-kompatibler API unter `/v1`, port 11434, die modelle liegen im volume `ollama-modelle`), `modell-laden` und unsere python-`app`. `modell-laden` läuft bei jedem start kurz mit, sagt dem ollama-server über `OLLAMA_HOST=ollama:11434` dass er `llama3.2:3b` und `qwen2.5:0.5b` ziehen soll (wirklich runtergeladen wird nur beim ersten mal) und beendet sich dann, erst danach startet `app`. Die app findet das modell nur über umgebungsvariablen: compose lädt die `.env` per `env_file` in den container und `llm.py` bzw. `hallo_llm.py` bauen daraus den OpenAI-client. `LLM_BASE_URL=http://ollama:11434/v1` sagt wo der server ist (den namen `ollama` löst docker im compose-netz auf) und `LLM_MODEL` welches modell, im code steht keins.
 
 Drei fragen an `llama3.2:3b`. Gemessen haben wir erst nach einem warmup-aufruf, sonst ist die TTFT durchs laden vom modell verfälscht.
 
@@ -23,11 +23,11 @@ Drei fragen an `llama3.2:3b`. Gemessen haben wir erst nach einem warmup-aufruf, 
 | Wann hat die Mensa geöffnet? | 378 | 6347 |
 | Wie kann ich die Leihfrist für ein Buch in der Bibliothek verlängern? | 313 | 23354 |
 
-Die TTFT liegt immer bei ca. 0,3 s. Die gesamtdauer hängt fast nur davon ab, wie lang die antwort ist (die antwort zur prüfung hatte ~1000 zeichen). Ollama läuft bei uns komplett auf der CPU (`ollama ps` zeigt 100% CPU), mit GPU wärs schneller.
+Die TTFT liegt hier bei ca. 0,25-0,38 s (mit wiederholungen siehe teil 2). Das ist im wesentlichen die zeit, in der das modell den prompt einliest (prefill). Danach wird token für token generiert (decode), deshalb hängt die gesamtdauer fast nur an der länge der antwort: llama schafft bei uns ca. 34-42 zeichen pro sekunde. Ollama läuft bei uns komplett auf der CPU (`ollama ps` zeigt 100% CPU), mit GPU wärs schneller.
 
 ## Teil 2 - Modell tauschen
 
-Wir haben nur `LLM_MODEL=qwen2.5:0.5b` in der `.env` geändert, am code nix.
+Modell nur über die config getauscht, am code nix geändert. Beim messen haben wir `LLM_MODEL=qwen2.5:0.5b` per `docker compose run --rm -e LLM_MODEL=qwen2.5:0.5b app hallo_llm.py "..."` gesetzt. Das `-e` überschreibt den wert aus der `.env`, kommt also aufs selbe raus wie die zeile in der `.env` zu ändern.
 
 | Frage | Modell | TTFT (ms) | Gesamt (ms) | Antwort brauchbar? |
 |---|---|---|---|---|
@@ -38,9 +38,24 @@ Wir haben nur `LLM_MODEL=qwen2.5:0.5b` in der `.env` geändert, am code nix.
 | Leihfrist verlängern | llama3.2:3b | 313 | 23354 | nein, erfundene fristen (verlängerung 3 tage usw.) |
 | Leihfrist verlängern | qwen2.5:0.5b | 117 | 2585 | nein, sehr allgemein und teils kein sinnvolles deutsch |
 
-qwen ist deutlich schneller (TTFT ca. 0,1 s statt 0,3 s, gesamtdauer auch viel kürzer), dafür sind die antworten noch schlechter. Wirklich brauchbar ist keine: beide modelle kennen die htwg nicht und erfinden einfach details dazu. Beim ersten aufruf nach dem wechsel hatte qwen übrigens 1734 ms TTFT, weil das modell erst geladen wird. Deshalb haben wir erst ab dem 2. aufruf gemessen.
+qwen ist deutlich schneller (siehe unten), dafür sind die antworten noch schlechter. Wirklich brauchbar ist keine, beide modelle kennen die htwg nicht und erfinden einfach details dazu.
+
+Beim ersten aufruf nach dem wechsel hatte qwen übrigens 1734 ms TTFT, weil das modell erst geladen wird. Deshalb haben wir erst ab dem 2. aufruf gemessen.
+
+Weil eine messung pro frage nicht viel aussagt, haben wir jede frage später nochmal 3x laufen lassen. TTFT in ms (erste zahl = messung aus der tabelle, dann die 3 wiederholungen):
+
+| Frage | llama3.2:3b | qwen2.5:0.5b |
+|---|---|---|
+| Prüfung anmelden | 251, 214, 166, 149 | 91, 98, 58, 55 |
+| Mensa geöffnet | 378, 260, 132, 133 | 118, 78, 57, 58 |
+| Leihfrist verlängern | 313, 275, 184, 155 | 117, 98, 55, 56 |
+
+Die TTFT schwankt also etwas, ist aber immer klein: llama ca. 0,13-0,38 s, qwen ca. 0,06-0,12 s. Bei den wiederholungen war der erste aufruf einer frage immer am langsamsten, die nächsten waren schneller. Das passt zum prefill: ollama hat den gleichen prompt vermutlich noch im cache und muss ihn nicht nochmal komplett einlesen.
+
+Die gesamtdauer schwankt viel stärker (llama bei der prüfungsfrage zwischen 16,8 und 30,2 s), weil `hallo_llm.py` keine temperature setzt und die antworten jedes mal anders lang sind. Pro zeichen gerechnet ist es stabil. Bei antworten über 300 zeichen schafft llama ca. 34-42 zeichen pro sekunde, qwen ca. 155-190, also rund 4-5x so viel.
 
 **HTWG privat oder staatlich?**
+
 - llama: "Die Hochschule für Technik und Wirtschaft Konstanz (HTWG) ist eine staatliche Hochschule in Deutschland." Staatlich stimmt, aber der name ist falsch, die Gestaltung fehlt (HTWG = Hochschule Konstanz Technik, Wirtschaft und Gestaltung).
 - qwen: "Es befindet sich die HTWG Konstanz in Konstanz. Die Hochschule hat eine öffentliche Bedeutung und stellt sicher, dass es ihre Schulgebiete und Sportteams verwaltet." Beantwortet die frage gar nicht.
 
@@ -54,6 +69,8 @@ Wieder mit `llama3.2:3b`.
 
 ### Sampling
 
+Kurz zur mechanik: das modell gibt für jedes mögliche nächste token einen wert aus (logit). Die logits werden durch die temperature geteilt und per softmax zu wahrscheinlichkeiten gemacht, daraus wird dann gezogen. Kleines T macht die verteilung spitzer (T → 0 heißt immer das wahrscheinlichste token), großes T macht sie flacher, dann kommen auch unwahrscheinlichere tokens dran.
+
 `sampling.py` mit dem standard-prompt (name für ein neues mensa-gericht):
 
 | Temperature | verschiedene Antworten (von 5) |
@@ -63,9 +80,10 @@ Wieder mit `llama3.2:3b`.
 | 1.2 | 5 |
 
 Bei temperature 0 kam hier wirklich 5x dasselbe raus. Garantiert ist das aber nicht. Bei 0 wird zwar immer das wahrscheinlichste token genommen, aber die wahrscheinlichkeiten werden nicht jedes mal bitgenau gleich berechnet. Das liegt an gleitkomma-rundungen, und die hängen davon ab wie parallel bzw. in welchen batches gerechnet wird (auf einer GPU auch zusammen mit anderen anfragen). Wenn zwei tokens fast gleich wahrscheinlich sind, kann das kippen und ab da läuft die antwort anders weiter.
-Das haben wir in teil 4 auch gesehen: ohne response_format waren bei T 0 manche wiederholungen anders als der erste aufruf. Die wiederholungen untereinander waren aber gleich, vermutlich weil ollama den prompt beim zweiten mal aus dem cache nimmt und dadurch minimal anders rechnet. Bei so kurzen antworten wie hier fällt das einfach nicht auf.
 
-Faktenfrage `Ist die HTWG Konstanz eine private oder staatliche Hochschule? Antworte mit einem Satz.`:
+Das haben wir in teil 4 auch gesehen: ohne response_format war bei T 0 die 2. antwort manchmal anders als die 1., die 3. aber immer gleich wie die 2. Wir hatten den prompt-cache von ollama im verdacht und das mit der eduroam-mail getestet: nach einer anderen mail kommt antwort A, direkt 2x wiederholt kommt B und B, nach einer anderen mail wieder A. Die antwort hängt also davon ab, ob ollama den prompt schon komplett im cache hat oder neu einliest, dabei wird minimal anders gerechnet. Bei so kurzen antworten wie hier fällt das nicht auf.
+
+Faktenfrage `Ist die HTWG Konstanz eine private oder staatliche Hochschule? Antworte mit einem Satz.` (1 / 3 / 3 verschiedene antworten bei T 0 / 0.7 / 1.2):
 
 - T 0: 5x "Die Hochschule für Technik und Wirtschaft (HTWG) Konstanz ist eine staatliche Hochschule."
 - T 0.7: 3x "Die HTWG Konstanz ist eine staatliche Hochschule.", 1x wie bei T 0, 1x "Hochschule für Technologie, Wirtschaft und Geisteswissenschaften (HTWG)"
@@ -76,10 +94,14 @@ Staatlich stimmt immer. Aber sobald das modell den namen ausschreibt ist er fals
 ### Tokens
 
 Original-texte: deutsch 63 tokens, englisch 49 tokens, beide 21 wörter. Deutsch braucht also 14 tokens mehr, laut skript +29%.
+
 Die 29% sind aber mit den steuer-tokens vom chat-format gerechnet. Ein prompt mit nur einem wort ("a") ergibt 26 tokens, also sind ca. 25 tokens overhead. Ohne den overhead sind es 38 zu 24 tokens, also eher +58%.
 
 Dann haben wir die texte in `tokens.py` durch eine frage mit langen wörtern ersetzt (Prüfungsanmeldungsfrist, Wiederholungsklausur, Bachelorstudiengang, Rücktrittsformular). Ergebnis: deutsch 71 tokens für 16 wörter, englisch 55 tokens für 25 wörter. Das sind 16 tokens mehr, wieder +29% (ohne overhead 46 zu 30, ca. +53%).
+
 Der unterschied wird also nicht wirklich größer. Pro wort ist deutsch zwar viel teurer (ohne overhead ca. 2,9 tokens pro wort, vorher 1,8), aber englisch braucht für denselben inhalt einfach mehr wörter (Prüfungsanmeldungsfrist = exam registration deadline). Das gleicht sich fast aus.
+
+Warum deutsch überhaupt teurer ist: der tokenizer (BPE) hat sein vokabular aus überwiegend englischen texten gelernt. Häufige englische wörter sind meist ein einzelnes token, deutsche wörter und vor allem lange komposita werden in mehrere stücke zerlegt.
 
 ## Teil 4 - Einordnen
 
