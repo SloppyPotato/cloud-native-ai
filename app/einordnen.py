@@ -13,7 +13,7 @@ import json
 import sys
 from typing import Literal
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ValidationError, field_validator
 
 from llm import MODEL, client
 
@@ -25,10 +25,30 @@ SYSTEM_PROMPT = (
     "frist ist die Frist aus der Mail, so wie sie dort steht, oder null."
 )
 
-class Anfrage(BaseModel):
+# studiengänge der fakultät informatik
+STUDIENGAENGE = {"AIN", "WIN", "GIB", "MSI", "BIT"}
+
+
+class AnfrageOhneZusatz(BaseModel):
     anliegen: Literal["pruefung", "mensa", "bibliothek", "sonstiges"]
     studiengang: str | None
     frist: str | None
+
+
+class Anfrage(AnfrageOhneZusatz):
+    @field_validator("studiengang", "frist", mode="before")
+    @classmethod
+    def null_text_zu_none(cls, wert):
+        if isinstance(wert, str) and wert.strip().lower() in ("", "null", "none"):
+            return None
+        return wert
+
+    @field_validator("studiengang")
+    @classmethod
+    def nur_bekannte_kuerzel(cls, wert):
+        if wert and wert.strip().upper() in STUDIENGAENGE:
+            return wert.strip().upper()
+        return None
 
 
 def schema_von(modell: type[BaseModel]) -> dict:
