@@ -1,4 +1,4 @@
-"""Teil D: Anfragen an den Campus-Assistenten strukturiert einordnen.
+"""Teil 4: Anfragen an den Campus-Assistenten strukturiert einordnen.
 
 Das Modell soll aus einer Mail drei Dinge herauslesen: das Anliegen,
 den Studiengang und eine Frist. Das Ergebnis verarbeitet ein Programm

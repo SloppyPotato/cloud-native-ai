@@ -1,4 +1,4 @@
-"""Teil C: Wie viele Tokens kostet derselbe Inhalt auf Deutsch und Englisch?
+"""Teil 3: Wie viele Tokens kostet derselbe Inhalt auf Deutsch und Englisch?
 
 Die API meldet in usage.prompt_tokens, wie viele Tokens die Eingabe hatte.
 Darin stecken auch einige Steuer-Tokens des Chat-Formats, bei beiden

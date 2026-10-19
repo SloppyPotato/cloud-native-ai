@@ -1,4 +1,4 @@
-"""Teil B: Wie stark streuen die Antworten bei verschiedenen Temperaturen?
+"""Teil 3: Wie stark streuen die Antworten bei verschiedenen Temperaturen?
 
 Aufruf:
     docker compose run --rm app sampling.py
