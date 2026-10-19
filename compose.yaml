@@ -1,0 +1,29 @@
+services:
+  ollama:
+    image: ollama/ollama:0.35.1
+    volumes:
+      - ollama-modelle:/root/.ollama
+    ports:
+      - "11434:11434"
+
+  # zieht einmal beide modelle und ist dann fertig
+  modell-laden:
+    image: ollama/ollama:0.35.1
+    environment:
+      - OLLAMA_HOST=ollama:11434
+    entrypoint: ["sh", "-c", "ollama pull llama3.2:3b && ollama pull qwen2.5:0.5b"]
+    depends_on:
+      - ollama
+
+  # modell kommt aus .env, skript beim aufruf: docker compose run --rm app sampling.py
+  app:
+    build: ./app
+    env_file: .env
+    volumes:
+      - ./app:/app   # code änderungen ohne neuen build
+    depends_on:
+      modell-laden:
+        condition: service_completed_successfully
+
+volumes:
+  ollama-modelle:
