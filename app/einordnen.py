@@ -73,9 +73,10 @@ def auswerten() -> None:
     richtig = 0
     for fall in faelle:
         ergebnis = einordnen(fall["mail"])
-        # TODO 4: Vergleicht ergebnis mit fall["erwartet"]. Zählt einen
-        #         Fall als richtig, wenn das Anliegen stimmt. Gebt für
-        #         jeden Fall Mail, Ergebnis und ✓ oder ✗ aus.
+        treffer = ergebnis.anliegen == fall["erwartet"]["anliegen"]
+        richtig += treffer
+        print(f"\n{'✓' if treffer else '✗'} {fall['mail']}")
+        print(f"  ergebnis: {ergebnis.model_dump()}")
     print(f"\n{richtig} von {len(faelle)} Anliegen richtig ({MODEL})")
 
 
