@@ -84,7 +84,8 @@ def schema_von(modell: type[BaseModel]) -> dict:
     }
 
 
-def einordnen(mail: str, versuche: int = 3) -> Anfrage:
+def einordnen(mail: str, versuche: int = 3,
+              klasse: type[AnfrageOhneZusatz] = Anfrage) -> AnfrageOhneZusatz:
     """Fragt das Modell und gibt eine geprüfte Anfrage zurück."""
     nachricht = [
         {"role": "system", "content": SYSTEM_PROMPT},
@@ -102,24 +103,39 @@ def einordnen(mail: str, versuche: int = 3) -> Anfrage:
         )
         roh = antwort.choices[0].message.content or ""
         try:
-            return Anfrage.model_validate_json(roh, context={"mail": mail})
+            return klasse.model_validate_json(roh, context={"mail": mail})
         except ValidationError as fehler:
             print(f"  versuch {versuch}/{versuche} ungültig: {fehler.error_count()} fehler")
     raise RuntimeError(f"nach {versuche} versuchen immer noch keine gültige antwort, abbruch")
+
+
+def alle_felder_richtig(ergebnis: AnfrageOhneZusatz, erwartet: dict) -> bool:
+    if ergebnis.anliegen != erwartet["anliegen"] or ergebnis.studiengang != erwartet["studiengang"]:
+        return False
+    if erwartet["frist"] is None:
+        return ergebnis.frist is None
+    return erwartet["frist"] in (ergebnis.frist or "")
 
 
 def auswerten() -> None:
     """Ordnet alle Test-Mails ein und vergleicht mit dem Erwarteten."""
     with open("mails.json", encoding="utf-8") as f:
         faelle = json.load(f)
-    richtig = 0
+    richtig = vorher = nachher = 0
     for fall in faelle:
-        ergebnis = einordnen(fall["mail"])
-        treffer = ergebnis.anliegen == fall["erwartet"]["anliegen"]
+        # einmal fragen, dann dieselbe antwort ohne und mit zusatz-prüfung bewerten
+        ohne = einordnen(fall["mail"], klasse=AnfrageOhneZusatz)
+        treffer = ohne.anliegen == fall["erwartet"]["anliegen"]
         richtig += treffer
         print(f"\n{'✓' if treffer else '✗'} {fall['mail']}")
-        print(f"  ergebnis: {ergebnis.model_dump()}")
+        print(f"  ergebnis: {ohne.model_dump()}")
+        mit = Anfrage.model_validate(ohne.model_dump(), context={"mail": fall["mail"]})
+        if mit.model_dump() != ohne.model_dump():
+            print(f"  geprüft:  {mit.model_dump()}")
+        vorher += alle_felder_richtig(ohne, fall["erwartet"])
+        nachher += alle_felder_richtig(mit, fall["erwartet"])
     print(f"\n{richtig} von {len(faelle)} Anliegen richtig ({MODEL})")
+    print(f"alle drei felder richtig: ohne zusatz {vorher}, mit zusatz {nachher} von {len(faelle)}")
 
 
 if __name__ == "__main__":
