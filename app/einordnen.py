@@ -7,8 +7,6 @@ weiter, es muss also immer die gleiche Form haben.
 Aufruf:
     docker compose run --rm app einordnen.py
     docker compose run --rm app einordnen.py "Eure eigene Mail"
-
-Eure Aufgaben stehen bei den TODO-Kommentaren.
 """
 
 import json
@@ -26,7 +24,6 @@ SYSTEM_PROMPT = (
     "studiengang ist das Kürzel (z. B. AIN, WIN, MSI) oder null. "
     "frist ist die Frist aus der Mail, so wie sie dort steht, oder null."
 )
-
 
 class Anfrage(BaseModel):
     anliegen: Literal["pruefung", "mensa", "bibliothek", "sonstiges"]
@@ -51,14 +48,22 @@ def einordnen(mail: str, versuche: int = 3) -> Anfrage:
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": mail},
     ]
-    # TODO 1: Ruft das Modell auf. Wählt eine passende temperature
-    #         und übergebt response_format=schema_von(Anfrage).
-    # TODO 2: Prüft die Antwort mit Anfrage.model_validate_json(...).
-    # TODO 3: Schlägt die Prüfung fehl (ValidationError), versucht es
-    #         erneut, höchstens `versuche`-mal. Gebt bei jedem
-    #         Fehlversuch eine kurze Meldung aus. Klappt es gar
-    #         nicht, werft einen RuntimeError.
-    raise NotImplementedError("TODO: einordnen() umsetzen")
+    for versuch in range(1, versuche + 1):
+        antwort = client.chat.completions.create(
+            model=MODEL,
+            messages=nachricht,
+            # 0 weil wir nur daten aus der mail rausziehen, kreativ soll da nix sein.
+            # es wird immer das wahrscheinlichste token genommen, gleiche mail gibt also praktisch immer das gleiche ergebnis
+            temperature=0,
+            max_tokens=200,  # json mit 3 feldern ist kurz, so kann sich das modell nicht endlos verrennen
+            response_format=schema_von(Anfrage),
+        )
+        roh = antwort.choices[0].message.content or ""
+        try:
+            return Anfrage.model_validate_json(roh)
+        except ValidationError as fehler:
+            print(f"  versuch {versuch}/{versuche} ungültig: {fehler.error_count()} fehler")
+    raise RuntimeError(f"nach {versuche} versuchen immer noch keine gültige antwort, abbruch")
 
 
 def auswerten() -> None:
