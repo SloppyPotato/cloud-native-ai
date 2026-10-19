@@ -10,10 +10,11 @@ Aufruf:
 """
 
 import json
+import re
 import sys
 from typing import Literal
 
-from pydantic import BaseModel, ValidationError, field_validator
+from pydantic import BaseModel, ValidationError, ValidationInfo, field_validator
 
 from llm import MODEL, client
 
@@ -27,6 +28,18 @@ SYSTEM_PROMPT = (
 
 # studiengänge der fakultät informatik
 STUDIENGAENGE = {"AIN", "WIN", "GIB", "MSI", "BIT"}
+
+
+# kleinschreiben und satzzeichen raus, sonst scheitert "Montag, 26.10." an "Montag 26.10."
+# punkte bleiben drin wegen datum
+def klein(text: str) -> str:
+    return " ".join(re.sub(r"[^\w.]+", " ", text.lower()).split())
+
+
+# punkt am ende egal, und nur ganze wörter zählen ("6.10." soll nicht in "16.10." gefunden werden)
+def steht_in(teil: str, mail: str) -> bool:
+    teil = klein(teil).rstrip(".")
+    return bool(teil) and re.search(rf"(?<!\w){re.escape(teil)}(?!\w)", klein(mail)) is not None
 
 
 class AnfrageOhneZusatz(BaseModel):
@@ -49,6 +62,15 @@ class Anfrage(AnfrageOhneZusatz):
         if wert and wert.strip().upper() in STUDIENGAENGE:
             return wert.strip().upper()
         return None
+
+    @field_validator("frist")
+    @classmethod
+    def frist_muss_in_mail_stehen(cls, wert, info: ValidationInfo):
+        mail = (info.context or {}).get("mail")
+        if wert and mail and not steht_in(wert, mail):
+            print(f"  warnung: frist {wert!r} steht nicht in der mail, wird None")
+            return None
+        return wert
 
 
 def schema_von(modell: type[BaseModel]) -> dict:
@@ -80,7 +102,7 @@ def einordnen(mail: str, versuche: int = 3) -> Anfrage:
         )
         roh = antwort.choices[0].message.content or ""
         try:
-            return Anfrage.model_validate_json(roh)
+            return Anfrage.model_validate_json(roh, context={"mail": mail})
         except ValidationError as fehler:
             print(f"  versuch {versuch}/{versuche} ungültig: {fehler.error_count()} fehler")
     raise RuntimeError(f"nach {versuche} versuchen immer noch keine gültige antwort, abbruch")
