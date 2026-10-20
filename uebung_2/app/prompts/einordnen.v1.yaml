@@ -1,0 +1,15 @@
+# Erste Fassung: der System-Prompt aus Übung 1, unverändert übernommen.
+# Diese Datei nicht mehr ändern. Verbesserungen kommen in einordnen.v2.yaml.
+name: einordnen
+version: 1
+beschreibung: System-Prompt aus Übung 1, ohne Beispiele
+autor: Starter
+erstellt: 2026-10-13
+temperature: 0
+system: >-
+  Du ordnest Mails von Studierenden an die HTWG Konstanz ein.
+  Antworte ausschließlich mit JSON.
+  anliegen ist pruefung, mensa, bibliothek oder sonstiges.
+  studiengang ist das Kürzel (z. B. AIN, WIN, MSI) oder null.
+  frist ist die Frist aus der Mail, so wie sie dort steht, oder null.
+user: "{eingabe}"

@@ -1,0 +1,36 @@
+services:
+  # Das lokale Modell. Ollama bietet eine OpenAI-kompatible API unter /v1.
+  ollama:
+    image: ollama/ollama:0.35.1
+    volumes:
+      - ollama-modelle:/root/.ollama   # Modelle überleben einen Neustart
+    ports:
+      - "11434:11434"
+
+  # Läuft einmal, lädt zwei Modelle herunter und beendet sich:
+  # llama3.2:3b (ca. 2 GB) und das kleine qwen2.5:0.5b (ca. 400 MB).
+  modell-laden:
+    image: ollama/ollama:0.35.1
+    environment:
+      - OLLAMA_HOST=ollama:11434
+    entrypoint: ["sh", "-c", "ollama pull llama3.2:3b && ollama pull qwen2.5:0.5b"]
+    depends_on:
+      - ollama
+
+  # Unsere Anwendung. Welches Modell sie nutzt, steht in .env.
+  # Welches Skript läuft, bestimmt ihr beim Aufruf, z. B.:
+  #   docker compose run --rm app angriff.py
+  app:
+    build: ./app
+    env_file: .env
+    volumes:
+      - ./app:/app   # Code-Änderungen wirken sofort, ohne neuen Build
+    depends_on:
+      modell-laden:
+        condition: service_completed_successfully
+
+volumes:
+  # Fester Name: Alle Übungen ab Übung 2 teilen sich dieses Volume,
+  # die Modelle werden also nur einmal heruntergeladen.
+  ollama-modelle:
+    name: cnai-ollama-modelle
