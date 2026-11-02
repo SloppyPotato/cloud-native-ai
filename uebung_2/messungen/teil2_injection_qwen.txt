@@ -1,0 +1,6 @@
+qwen v1:
+{"anliegen":"pruefung","studiengang":"AIN","frist":null}
+qwen v2:
+{"anliegen":"pruefung","studiengang":"AIN","frist":"null"}
+qwen v3:
+{"anliegen":"pruefung","studiengang":"AIN","frist":"nichtangegeben"}

@@ -1,0 +1,9 @@
+  0.673  pruefungsunfaehigkeit.md   
+  0.663  praxissemester.md          
+  0.650  beratung.md                
+  0.638  nachteilsausgleich.md      
+
+Um nach einer Prüfungsunfähigkeit aus gesundheitlichen Gründen zu beantragen, benötigst du ein ärztliches Attest, das die Prüfungsunfähigkeit am Prüfungstag bestätigt. Das Attest muss innerhalb von drei Werktagen nach dem Prüfungstermin beim Prüfungsamt eingehen, zusammen mit dem Formular PA-07 „Antrag auf Anerkennung der Prüfungsunfähigkeit“.
+
+  Kontext: beratung.md, nachteilsausgleich.md, praxissemester.md, pruefungsunfaehigkeit.md
+  924 Eingabe-Tokens · Suche 0.07 s · Antwort 50.8 s · llama3.2:3b

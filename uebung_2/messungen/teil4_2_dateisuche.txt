@@ -1,0 +1,27 @@
+Suchbegriffe: ['tag', 'meiner', 'klausur', 'krank', 'tun']
+     9  beratung.md
+     7  bibliothek.md
+     4  praxissemester.md
+
+Wenn du am Tag deiner Klausur krank bist, solltest du dich an die Telefonseelsorge wenden, die rund um die Uhr erreichbar ist.
+
+  Kontext: beratung.md, bibliothek.md, praxissemester.md
+  811 Eingabe-Tokens · Suche 0.00 s · Antwort 34.3 s · llama3.2:3b
+------
+Suchbegriffe: ['Krankheit', 'Arzt', 'Medikamente', 'Krankenakte', 'Kurzurlaub', 'Klausurfehler']
+     1  praxissemester.md
+
+Wenn du am Tag deiner Klausur krank bist, solltest du dich an das Praktikantenamt wenden und deine Krankheitstage nachholen. Denke daran, dass Krankheitstage über fünf Tage hinaus nachgeholt werden müssen. Informiere dich über den Ausbildungsvertrag, um sicherzustellen, dass du alle Anforderungen erfüllst. (Quelle: praxissemester.md)
+
+  Kontext: praxissemester.md
+  323 Eingabe-Tokens · Suche 15.20 s · Antwort 28.0 s · llama3.2:3b
+------
+Suchbegriffe: ['sitzt', 'raum', 'f-201']
+     3  pruefungsanmeldung.md
+     3  raeume.md
+     2  nachteilsausgleich.md
+
+In Gebäude F liegt der Raum F-012 im Erdgeschoss.
+
+  Kontext: nachteilsausgleich.md, pruefungsanmeldung.md, raeume.md
+  736 Eingabe-Tokens · Suche 0.00 s · Antwort 24.5 s · llama3.2:3b

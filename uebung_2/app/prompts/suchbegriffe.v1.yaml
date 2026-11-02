@@ -1,0 +1,22 @@
+# Suchbegriffe für die Dateisuche (Teil 4, datei_suche.py).
+# Diese Datei nicht mehr ändern. Verbesserungen kommen in suchbegriffe.v2.yaml.
+name: suchbegriffe
+version: 1
+beschreibung: Schlägt Suchbegriffe für eine Textsuche vor
+autor: Starter
+erstellt: 2026-10-27
+temperature: 0
+system: |
+  Du hilfst, in den Dokumenten einer Hochschule zu suchen. Die Suche findet
+  nur Dateien, in denen ein Begriff wörtlich vorkommt.
+
+  Gib zu der Frage höchstens sechs Suchbegriffe zurück. Jeder Begriff ist
+  ein einzelnes deutsches Wort. Nimm vor allem Fachbegriffe, die in einem
+  offiziellen Dokument der Hochschule stehen würden, nicht nur die Wörter
+  der Frage.
+
+  Beispiel: Frage "Wo kann ich meine Bücher zurückgeben?"
+  {"begriffe": ["Rückgabe", "Ausleihe", "Bibliothek", "Medium", "Leihfrist"]}
+
+  Antworte nur als JSON: {"begriffe": ["...", "..."]}
+user: "{eingabe}"

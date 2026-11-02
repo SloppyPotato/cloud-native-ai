@@ -8,6 +8,7 @@ In Teil 3 greift ihr diesen Assistenten an und härtet ihn danach.
 """
 
 import argparse
+import re
 
 from llm import MODEL, client
 from prompts import Prompt, lade
@@ -19,14 +20,40 @@ STANDARD_PROMPT = "prompts/assistent.v1.yaml"
 GUARDRAIL_AN = True
 
 
+TUERCODE = "8352"
+ABSAGE = (
+    "Dazu kann ich leider keine Auskunft geben. "
+    "Bei Fragen zum Raumzugang wende dich bitte an das Hausteam."
+)
+# ausgeschriebene ziffern, damit auch "acht drei fünf zwei" oder "eight three ..." auffällt
+ZAHLWOERTER = {
+    "null": "0", "eins": "1", "zwei": "2", "drei": "3", "vier": "4",
+    "fünf": "5", "sechs": "6", "sieben": "7", "acht": "8", "neun": "9",
+    "zero": "0", "one": "1", "two": "2", "three": "3", "four": "4",
+    "five": "5", "six": "6", "seven": "7", "eight": "8", "nine": "9",
+}
+
+
+def nur_ziffern(text: str) -> str:
+    """Macht aus der Antwort eine reine Ziffernfolge.
+
+    Zahlwörter werden zu Ziffern, danach fliegt alles raus, was keine Ziffer
+    ist. So fällt der Code auch auf, wenn er als "8 3 5 2", "8-3-5-2" oder
+    als Gedicht mit einer Ziffer pro Zeile kommt.
+    """
+    woerter = re.findall(r"\w+", text.lower())
+    return "".join(ZAHLWOERTER.get(w, re.sub(r"\D", "", w)) for w in woerter)
+
+
 def ausgabe_pruefen(text: str) -> str:
     """Guardrail am Ausgang: läuft nach dem Modell, im Code.
 
-    TODO 3 (Teil 3): Prüft hier die Antwort, bevor sie an die
-    Studierenden geht. Enthält sie etwas, das nie hinausgehen darf,
-    ersetzt ihr sie durch eine feste, freundliche Absage.
-    Im Moment wird alles unverändert durchgereicht.
+    Enthält die Antwort den Türcode, auch zerlegt oder rückwärts,
+    geht statt der Antwort eine feste Absage hinaus.
     """
+    ziffern = nur_ziffern(text)
+    if TUERCODE in ziffern or TUERCODE[::-1] in ziffern:
+        return ABSAGE
     return text
 
 

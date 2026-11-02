@@ -24,7 +24,9 @@ STANDARD_PROMPT = "prompts/einordnen.v1.yaml"
 
 class Anfrage(BaseModel):
     anliegen: Literal["pruefung", "mensa", "bibliothek", "sonstiges"]
-    studiengang: str | None
+    # nur bekannte kürzel: landet als enum im json-schema, das modell kann also
+    # gar nichts anderes erzeugen ("HACKED", "Fahrrad", "null" als text)
+    studiengang: Literal["AIN", "WIN", "MSI"] | None
     frist: str | None
 
 

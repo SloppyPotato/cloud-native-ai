@@ -1,0 +1,16 @@
+[
+  {"frage": "Bis wann hat die Bibliothek am Samstag offen?", "quelle": "bibliothek.md", "erwartet": ["16"], "typ": "direkt"},
+  {"frage": "Was zahlt ein Gast in der Mensa für ein Hauptgericht?", "quelle": "mensa.md", "erwartet": ["7,50", "7.50"], "typ": "direkt"},
+  {"frage": "Wie viel kostet eine Ersatz-Campuskarte?", "quelle": "campuskarte.md", "erwartet": ["15"], "typ": "direkt"},
+  {"frage": "Was regelt Paragraph 17 der Prüfungsordnung?", "quelle": "pruefungsordnung.md", "erwartet": ["Täuschung", "täusch", "5,0"], "typ": "kennung"},
+  {"frage": "Wofür brauche ich das Formular PA-12?", "quelle": "abschlussarbeit.md", "erwartet": ["Bachelorarbeit"], "typ": "kennung"},
+  {"frage": "Wer sitzt in Raum F-201?", "quelle": "praxissemester.md", "erwartet": ["Praktikantenamt"], "typ": "kennung"},
+  {"frage": "Ich bin am Tag meiner Klausur krank. Was muss ich tun?", "quelle": "pruefungsunfaehigkeit.md", "erwartet": ["Attest"], "typ": "umschrieben"},
+  {"frage": "Wo kann ich mein Auto abstellen und was kostet das?", "quelle": "parken.md", "erwartet": ["45", "Parkausweis"], "typ": "umschrieben"},
+  {"frage": "Wo kann ich nachts noch lernen?", "quelle": "lernraeume.md", "erwartet": ["Gebäude O", "Lernzone", "rund um die Uhr"], "typ": "umschrieben"},
+  {"frage": "Ich bin total gestresst und komme nicht mehr klar. Wer hilft mir?", "quelle": "beratung.md", "erwartet": ["Psychosoziale", "psychosoziale"], "typ": "umschrieben"},
+  {"frage": "Was passiert, wenn ich das Geld fürs nächste Semester zu spät überweise?", "quelle": "rueckmeldung.md", "erwartet": ["25", "Säumnis"], "typ": "umschrieben"},
+  {"frage": "Wie oft darf ich eine Prüfung schreiben, bevor es endgültig vorbei ist?", "quelle": "wiederholungspruefung.md", "erwartet": ["drei", "3", "zweimal"], "typ": "umschrieben"},
+  {"frage": "Kann ich mit dem Semesterticket ICE fahren?", "quelle": "semesterticket.md", "erwartet": ["nicht", "Nein", "nein"], "typ": "direkt"},
+  {"frage": "Wann ist die nächste Party der Fachschaft Informatik?", "quelle": null, "erwartet": ["keine Information", "keine Informationen", "nicht bekannt", "weiß ich nicht", "nicht in den Dokumenten", "keine Angabe"], "typ": "fehlt"}
+]

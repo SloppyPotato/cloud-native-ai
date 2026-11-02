@@ -1,0 +1,25 @@
+Modell: llama3.2:3b · Embedding: granite-embedding:278m · 14 Fragen
+
+Frage                                                Typ            woerter     datei       rag
+Bis wann hat die Bibliothek am Samstag offen?        direkt             K A       K A       K A
+Was zahlt ein Gast in der Mensa für ein Hauptgerich  direkt             K A       K A       K A
+Wie viel kostet eine Ersatz-Campuskarte?             direkt             · ·       K A       K A
+Was regelt Paragraph 17 der Prüfungsordnung?         kennung            K A       K A       K A
+Wofür brauche ich das Formular PA-12?                kennung            K A       K A       K A
+Wer sitzt in Raum F-201?                             kennung            · ·       · ·       · ·
+Ich bin am Tag meiner Klausur krank. Was muss ich t  umschrieben        · ·       · ·       K A
+Wo kann ich mein Auto abstellen und was kostet das?  umschrieben        · ·       K A       K A
+Wo kann ich nachts noch lernen?                      umschrieben        · ·       · ·       K A
+Ich bin total gestresst und komme nicht mehr klar.   umschrieben        K A       K A       K A
+Was passiert, wenn ich das Geld fürs nächste Semest  umschrieben        K A       K A       K A
+Wie oft darf ich eine Prüfung schreiben, bevor es e  umschrieben        · A       · A       K A
+Kann ich mit dem Semesterticket ICE fahren?          direkt             K A       K A       K A
+Wann ist die nächste Party der Fachschaft Informati  fehlt              - A       - A       - A
+
+K = richtige Datei im Kontext, A = Antwort enthält ein erwartetes Stichwort
+
+| Variante | Kontext richtig | Antwort richtig | Eingabe-Tokens (Ø) | Dauer (Ø) |
+|---|---|---|---|---|
+| woerter | 7/13 | 9/14 | 682 | 16.9 s |
+| datei | 9/13 | 11/14 | 611 | 21.9 s |
+| rag | 12/13 | 13/14 | 567 | 11.9 s |

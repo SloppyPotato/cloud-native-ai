@@ -1,0 +1,9 @@
+Suchbegriffe: ['prüfung', 'schreiben', 'bevor', 'endgültig', 'vorbei']
+     9  pruefungsanmeldung.md
+     9  pruefungsordnung.md
+     9  pruefungsunfaehigkeit.md
+
+Eine nicht bestandene Prüfung darf zweimal wiederholt werden. Die zweite Wiederholung ist in der Regel eine mündliche Prüfung. Bestandene Prüfungen können nicht wiederholt werden. (Quelle: pruefungsordnung.md)
+
+  Kontext: pruefungsanmeldung.md, pruefungsordnung.md, pruefungsunfaehigkeit.md
+  914 Eingabe-Tokens · Suche 0.00 s · Antwort 13.4 s · llama3.2:3b

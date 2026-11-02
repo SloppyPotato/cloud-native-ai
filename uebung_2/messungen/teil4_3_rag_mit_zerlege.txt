@@ -1,0 +1,23 @@
+Modell: llama3.2:3b · Embedding: granite-embedding:278m · 14 Fragen
+
+Frage                                                Typ                rag
+Bis wann hat die Bibliothek am Samstag offen?        direkt             K A
+Was zahlt ein Gast in der Mensa für ein Hauptgerich  direkt             K A
+Wie viel kostet eine Ersatz-Campuskarte?             direkt             K A
+Was regelt Paragraph 17 der Prüfungsordnung?         kennung            K A
+Wofür brauche ich das Formular PA-12?                kennung            K A
+Wer sitzt in Raum F-201?                             kennung            · ·
+Ich bin am Tag meiner Klausur krank. Was muss ich t  umschrieben        K A
+Wo kann ich mein Auto abstellen und was kostet das?  umschrieben        K A
+Wo kann ich nachts noch lernen?                      umschrieben        K A
+Ich bin total gestresst und komme nicht mehr klar.   umschrieben        K A
+Was passiert, wenn ich das Geld fürs nächste Semest  umschrieben        K A
+Wie oft darf ich eine Prüfung schreiben, bevor es e  umschrieben        K A
+Kann ich mit dem Semesterticket ICE fahren?          direkt             K A
+Wann ist die nächste Party der Fachschaft Informati  fehlt              - A
+
+K = richtige Datei im Kontext, A = Antwort enthält ein erwartetes Stichwort
+
+| Variante | Kontext richtig | Antwort richtig | Eingabe-Tokens (Ø) | Dauer (Ø) |
+|---|---|---|---|---|
+| rag | 12/13 | 13/14 | 567 | 17.6 s |

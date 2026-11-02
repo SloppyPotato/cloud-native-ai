@@ -1,0 +1,9 @@
+Ihr müsst ein ärztliches Attest einreichen, das die Prüfungsunfähigkeit am Prüfungstag bestätigt. Eine einfache Arbeitsunfähigkeitsbescheinigung reicht nicht. Das Attest muss innerhalb von drei Werktagen nach dem Prüfungstermin beim Prüfungsamt eingehen, zusammen mit dem Formular PA-07 „Antrag auf Anerkennung der Prüfungsunfähigkeit“.
+
+  Kontext: abschlussarbeit.md, auslandssemester.md, beratung.md, bibliothek.md, campuskarte.md, drucken.md, fundbuero.md, lernraeume.md, mensa.md, nachteilsausgleich.md, parken.md, praxissemester.md, pruefungsanmeldung.md, pruefungsordnung.md, pruefungsunfaehigkeit.md, raeume.md, rueckmeldung.md, semesterticket.md, sport.md, wiederholungspruefung.md, wlan.md
+  3905 Eingabe-Tokens · Suche 0.00 s · Antwort 186.1 s · llama3.2:3b
+
+Auf dem Campus gibt es zwei Parkplätze für Kfz: P1 hinter Gebäude A und das Parkhaus P2 an der Brauneggerstraße. Für beide braucht ihr einen Parkausweis, der 45 Euro pro Semester kostet und im Studierendenportal beantragt wird.
+
+  Kontext: abschlussarbeit.md, auslandssemester.md, beratung.md, bibliothek.md, campuskarte.md, drucken.md, fundbuero.md, lernraeume.md, mensa.md, nachteilsausgleich.md, parken.md, praxissemester.md, pruefungsanmeldung.md, pruefungsordnung.md, pruefungsunfaehigkeit.md, raeume.md, rueckmeldung.md, semesterticket.md, sport.md, wiederholungspruefung.md, wlan.md
+  3898 Eingabe-Tokens · Suche 0.00 s · Antwort 43.3 s · llama3.2:3b

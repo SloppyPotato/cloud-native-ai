@@ -7,15 +7,26 @@ services:
     ports:
       - "11434:11434"
 
-  # Läuft einmal, lädt zwei Modelle herunter und beendet sich:
-  # llama3.2:3b (ca. 2 GB) und das kleine qwen2.5:0.5b (ca. 400 MB).
+  # Läuft einmal, lädt drei Modelle herunter und beendet sich:
+  # llama3.2:3b (ca. 2 GB), das kleine qwen2.5:0.5b (ca. 400 MB) und
+  # ab Teil 4 das Embedding-Modell granite-embedding:278m (ca. 560 MB).
+  # Was schon im Volume liegt, wird nicht noch einmal geladen.
   modell-laden:
     image: ollama/ollama:0.35.1
     environment:
       - OLLAMA_HOST=ollama:11434
-    entrypoint: ["sh", "-c", "ollama pull llama3.2:3b && ollama pull qwen2.5:0.5b"]
+    entrypoint: ["sh", "-c", "ollama pull llama3.2:3b && ollama pull qwen2.5:0.5b && ollama pull granite-embedding:278m"]
     depends_on:
       - ollama
+
+  # Teil 4: die Vektordatenbank als eigener Service.
+  # Unter http://localhost:6333/dashboard könnt ihr in den Index schauen.
+  qdrant:
+    image: qdrant/qdrant:v1.20.0
+    volumes:
+      - qdrant-daten:/qdrant/storage   # Index überlebt einen Neustart
+    ports:
+      - "6333:6333"
 
   # Unsere Anwendung. Welches Modell sie nutzt, steht in .env.
   # Welches Skript läuft, bestimmt ihr beim Aufruf, z. B.:
@@ -28,9 +39,12 @@ services:
     depends_on:
       modell-laden:
         condition: service_completed_successfully
+      qdrant:
+        condition: service_started
 
 volumes:
   # Fester Name: Alle Übungen ab Übung 2 teilen sich dieses Volume,
   # die Modelle werden also nur einmal heruntergeladen.
   ollama-modelle:
     name: cnai-ollama-modelle
+  qdrant-daten:

@@ -1,0 +1,8 @@
+| k | Kontext richtig | Antwort richtig | Eingabe-Tokens (Ø) | Dauer (Ø) |
+|---|---|---|---|---|
+| 1 | 11/13 | 12/14 | 280 | 7.9 s |
+| 4 | 12/13 | 13/14 | 567 | 11.8 s |
+| 8 | 12/13 | 13/14 | 932 | 20.6 s |
+  falsch: ['Wer sitzt in Raum F-201?', 'Ich bin am Tag meiner Klausur krank. Was']
+  falsch: ['Wer sitzt in Raum F-201?']
+  falsch: ['Wer sitzt in Raum F-201?']

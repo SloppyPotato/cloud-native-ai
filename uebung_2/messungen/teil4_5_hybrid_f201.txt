@@ -1,0 +1,10 @@
+Kennungen: ['F-201']
+  1.000  praxissemester.md
+  0.701  raeume.md
+  0.695  bibliothek.md
+  0.671  raeume.md
+
+Das Praktikantenamt sitzt in Raum F-201.
+
+  Kontext: bibliothek.md, praxissemester.md, raeume.md
+  570 Eingabe-Tokens · Suche 0.05 s · Antwort 3.5 s · llama3.2:3b
