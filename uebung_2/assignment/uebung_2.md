@@ -15,14 +15,14 @@ In Übung 1 stand der Prompt als String mitten im Code. Das geht, solange es ein
 
 Danach wechselt ihr die Seite. Ihr greift den Campus-Assistenten an, bringt ihn dazu, ein Geheimnis zu verraten, und härtet ihn Schritt für Schritt. Dabei messt ihr zwei Zahlen, die immer zusammengehören: wie viele Angriffe durchkommen und wie viele harmlose Fragen dabei auf der Strecke bleiben.
 
-Grundlage ist das Skript zu **VL 3** (Prompt Engineering). Teil 4 kommt mit **VL 4** (Wissen abrufen) am 27.10. dazu.
+Grundlage sind die Skripte zu **VL 3** (Prompt Engineering) und **VL 4** (Wissen abrufen).
 
 | Teil | Inhalt | Aufwand | |
 |---|---|---|---|
 | **1** | Prompts aus dem Code holen | ca. 45 min | Kern |
 | **2** | Die Einordnung verbessern und messen | ca. 2 h | Kern |
 | **3** | Den Assistenten angreifen und härten | ca. 2 h | Kern |
-| **4** | Wissen abrufen (kommt mit VL 4) | ca. 2,5 h | Kern |
+| **4** | Wissen abrufen | ca. 2,5 h | Kern |
 | **5** | README mit Ergebnissen und Reflexion | ca. 45 min | Kern |
 | **Z** | Zusatz: ein Modell greift an | ca. 2 h | Zusatz |
 
@@ -130,9 +130,90 @@ Tragt beide Messungen in eine Tabelle im README ein, mit Verletzungsrate und Feh
 
 ---
 
-## Teil 4 · Wissen abrufen (Kern, kommt mit VL 4)
+## Teil 4 · Wissen abrufen (Kern)
 
-Dieser Teil wird nach der Vorlesung am **27.10.** ergänzt. Ihr erweitert den Assistenten so, dass er Fragen mit Wissen aus Dateien beantwortet, einmal mit einer einfachen Dateisuche und einmal mit RAG, und vergleicht beide.
+Bisher kennt der Assistent nur die vier Fakten, die in seinem System-Prompt stehen. Ab jetzt holt er sein Wissen aus einer kleinen Wissensbasis: 21 Markdown-Dateien im Ordner `app/wissen/`, von Bibliothek bis Prüfungsordnung, alle ausgedacht. Ihr baut drei Wege, dieses Wissen in den Kontext zu bringen, und messt sie gegeneinander. Grundlage ist das Skript zu **VL 4**.
+
+| Variante | Skript | Was in den Kontext kommt |
+|---|---|---|
+| `alles` | `alles.py` | die ganze Wissensbasis, ohne Suche |
+| `woerter` und `datei` | `datei_suche.py` | die drei Dateien mit den meisten Treffern einer Textsuche. Die Suchbegriffe sind entweder die Wörter der Frage (`--woerter`) oder vom Modell vorgeschlagen |
+| `rag` | `rag.py` | die vier Abschnitte, deren Embedding der Frage am ähnlichsten ist, aus der Vektordatenbank Qdrant |
+
+Die Antwort entsteht immer gleich, mit `prompts/wissen.v1.yaml`. Unterschiedlich ist nur, was gesucht und mitgegeben wird. `fragen.json` enthält 14 Testfragen mit der Datei, in der die Antwort steht.
+
+### 4.0 · Einrichten (am besten zu Hause)
+
+Ladet **„Übung 2 · Teil 4 (ZIP)“** herunter und entpackt es **in euren Ordner `uebung_2/`**. Dabei werden `compose.yaml`, `.env.example` und `app/requirements.txt` überschrieben, alles andere kommt dazu. Neu sind ein Service `qdrant` und ein drittes Modell, `granite-embedding:278m` (ca. 560 MB). Ergänzt in eurer `.env` die Zeile `EMBED_MODEL=granite-embedding:278m` (steht auch in `.env.example`). Die Embeddings laufen immer lokal, auch wenn ihr das Sprachmodell in der Academic Cloud nutzt.
+
+```bash
+docker compose run --rm --build app alles.py "Wann hat die Mensa offen?"
+```
+
+Der erste Aufruf lädt das Qdrant-Image und das Embedding-Modell herunter.
+
+### 4.1 · Alles in den Kontext (ca. 20 min)
+
+```bash
+docker compose run --rm app alles.py "Ich bin am Tag meiner Klausur krank. Was muss ich tun?"
+docker compose run --rm app alles.py "Wo kann ich mein Auto abstellen?"
+```
+
+1. Notiert Eingabe-Tokens und Dauer beider Aufrufe. Der zweite ist deutlich schneller, obwohl er gleich viele Tokens hat. Warum? Tipp: Was ist bei beiden Aufrufen gleich, und in welcher Reihenfolge stehen Wissen und Frage in der Nachricht?
+2. Schätzt: Was passiert mit Tokens, Kosten und Antwortqualität, wenn die Wissensbasis statt 21 Dateien 2.000 hat?
+
+### 4.2 · Dateisuche (ca. 45 min)
+
+Setzt `suche()` in `datei_suche.py` um (**TODO 4a**). Danach:
+
+```bash
+docker compose run --rm app datei_suche.py --woerter "Ich bin am Tag meiner Klausur krank. Was muss ich tun?"
+docker compose run --rm app datei_suche.py "Ich bin am Tag meiner Klausur krank. Was muss ich tun?"
+docker compose run --rm app datei_suche.py --woerter "Wer sitzt in Raum F-201?"
+```
+
+1. Welche Dateien findet die Suche mit den Wörtern der Frage, und warum gerade diese? Schaut euch an, welche Wortteile treffen.
+2. Welche Suchbegriffe schlägt das Modell vor? Welche Begriffe hätte es wählen müssen, um die richtige Datei zu finden?
+3. Bei „Raum F-201“ steht die Zeichenkette wörtlich in einer Datei, und trotzdem landet die Datei nicht unter den ersten drei. Warum nicht? Was müsste die Bewertung anders machen?
+4. Claude Code arbeitet genau so, ohne Index, und findet trotzdem fast immer die richtige Stelle. Was hat Claude Code, was unser Aufbau nicht hat? Nennt zwei Unterschiede.
+
+### 4.3 · RAG (ca. 45 min)
+
+```bash
+docker compose run --rm app rag.py --index
+docker compose run --rm app rag.py "Ich bin am Tag meiner Klausur krank. Was muss ich tun?"
+docker compose run --rm app vergleich_wissen.py rag
+```
+
+Im Moment ist jede Datei genau ein Abschnitt. Notiert das Ergebnis von `vergleich_wissen.py rag`. Dann:
+
+1. Setzt `zerlege()` in `rag.py` um (**TODO 4b**), baut den Index neu und messt noch einmal. Was hat sich bei „Kontext richtig“, „Antwort richtig“ und den Eingabe-Tokens geändert?
+2. Öffnet das Qdrant-Dashboard unter `http://localhost:6333/dashboard`, solange der Container läuft (`docker compose up -d qdrant`). Wie viele Punkte liegen in der Sammlung `campus`, und was steht neben dem Vektor in jedem Punkt? Wozu braucht `wissen.py` diese Angaben?
+3. Probiert `-k 1` und `-k 8`. Was gewinnt ihr, was verliert ihr?
+
+### 4.4 · Vergleichen (ca. 20 min)
+
+```bash
+docker compose run --rm app vergleich_wissen.py
+docker compose run --rm app vergleich_wissen.py alles
+```
+
+Ein Lauf über die drei Standardvarianten dauert etwa sieben Minuten, `alles` noch einmal zwei bis fünf. Übernehmt die Tabelle ins README und beantwortet:
+
+1. Ordnet die Fragen nach ihrem Typ (`direkt`, `kennung`, `umschrieben`, `fehlt`). Welche Variante gewinnt bei welchem Typ, und warum?
+2. Wo stand die richtige Datei im Kontext und die Antwort war trotzdem falsch? Was sagt das über die Fehlerquelle?
+3. Welche Variante würdet ihr für diese Wissensbasis in Produktion nehmen? Ab welcher Größe würdet ihr umsteigen, und worauf?
+
+### 4.5 · Eine Verbesserung, gemessen (ca. 20 min)
+
+Sucht euch **eine** Verbesserung aus, setzt sie um und messt sie mit `vergleich_wissen.py` gegen den Stand vorher:
+
+- `prompts/suchbegriffe.v2.yaml` mit besseren Anweisungen oder Beispielen für die Suchbegriffe (VL 3 lässt grüßen)
+- eine Bewertung der Dateisuche, bei der seltene Begriffe mehr zählen als häufige (die Idee hinter BM25)
+- eine hybride Suche: Kennungen wie `F-201`, `PA-12` oder `§ 17` per Textsuche, alles andere per RAG
+- ein anderes Embedding-Modell, etwa `nomic-embed-text` (`docker compose exec ollama ollama pull nomic-embed-text`, dann `EMBED_MODEL` ändern und neu indexieren). Achtet auf die umschriebenen Fragen.
+
+Beschreibt im README in drei, vier Sätzen, was ihr geändert habt und was es gebracht hat.
 
 ---
 
@@ -148,6 +229,8 @@ Euer README ist die Abgabe. Es enthält:
     2. Ein Kommilitone sagt: „Mit einem guten System-Prompt ist Prompt Injection gelöst.“ Was antwortet ihr, mit euren Zahlen?
     3. Welche eurer Abwehrmaßnahmen hat am meisten gebracht, und auf welcher Ebene (Modell, Prompt, System) wirkt sie?
     4. Warum braucht man neben der Verletzungsrate immer auch die Fehlablehnungsrate?
+    5. Ein Kommilitone sagt: „RAG ist immer besser als Textsuche.“ Was antwortet ihr, mit euren Zahlen aus Teil 4?
+    6. Warum misst `vergleich_wissen.py` „Kontext richtig“ und „Antwort richtig“ getrennt?
 
 ---
 
@@ -176,6 +259,7 @@ Von Hand angreifen ist mühsam. Bei **PAIR** (Chao et al., 2023) schreibt ein zw
 - [ ] Abhängigkeiten sind gepinnt.
 - [ ] Unter `app/prompts/` liegen mindestens `einordnen.v1`, `einordnen.v2`, `assistent.v1`, `assistent.v2` und `assistent.v3`. Keine Version wurde nach dem Messen überschrieben.
 - [ ] `angriffe.json` enthält eure drei eigenen Angriffe.
+- [ ] TODO 4a und 4b sind umgesetzt, `vergleich_wissen.py` läuft mit allen vier Varianten durch.
 - [ ] Das README enthält alle Punkte aus Teil 5.
 - [ ] Wer unter 80 % Anwesenheit landen könnte: Zusatzteil im README dokumentiert.
 
@@ -187,5 +271,7 @@ Von Hand angreifen ist mühsam. Bei **PAIR** (Chao et al., 2023) schreibt ein zw
 - **Gleiche Bedingungen:** Vergleicht Versionen immer mit demselben Modell und denselben Daten, am besten in einem Aufruf. Sonst messt ihr das Modell oder den Zufall, nicht den Prompt.
 - **Schwankungen trotz Temperature 0:** Dieselbe Messung kann zwischen zwei Läufen um einen Fall abweichen, etwa wenn eine harmlose Frage einmal beantwortet und einmal abgelehnt wird. Wiederholt auffällige Messungen und schreibt die Schwankung ins README, statt sie wegzulassen.
 - **Kleine Modelle sind eigen.** `llama3.2:3b` kopiert gern eure Markierungen wie `<frage>` in die Antwort. Das ist eine echte Nebenwirkung eures Prompts, notiert sie.
+- **Teil 4 auf dem Laptop:** Wird der Rechner bei `alles` sehr langsam oder bricht Docker ab, gebt Docker Desktop mehr Arbeitsspeicher (Settings, Resources) oder nehmt für das Sprachmodell die Academic Cloud. Die Embeddings bleiben lokal.
+- **Index veraltet?** Nach jeder Änderung an `wissen/` oder an `zerlege()` muss der Index neu gebaut werden: `rag.py --index`. Genau dieses Problem hat jedes RAG-System in Produktion.
 - **Angriffe nur auf euren eigenen Assistenten.** Was ihr hier lernt, probiert ihr nicht an fremden Systemen aus.
 - **KI-Werkzeuge** dürft ihr nutzen. Ihr müsst jede Zeile eures Codes und jeden Prompt erklären können.
