@@ -1,0 +1,15 @@
+[
+  {"aufgabe": "Was gibt es heute in der Mensa?", "werkzeuge": ["mensa_speiseplan"], "erwartet": ["Kürbissuppe", "Maultaschen", "Chili"], "typ": "datum"},
+  {"aufgabe": "Gibt es am Freitag ein veganes Gericht in der Mensa?", "werkzeuge": ["mensa_speiseplan"], "erwartet": ["Salat", "Pasta"], "typ": "datum"},
+  {"aufgabe": "Hat die Mensa am Samstag offen?", "werkzeuge": [], "erwartet": ["geschlossen", "nicht geöffnet", "kein Essen", "Montag bis Freitag", "nein", "Nein"], "typ": "datum"},
+  {"aufgabe": "Ist O-108 am Donnerstag um 14 Uhr frei?", "werkzeuge": ["raum_frei"], "erwartet": ["belegt", "Tutorium", "nicht frei", "nicht verfügbar"], "typ": "datum"},
+  {"aufgabe": "Welcher Seminarraum zum Lernen hat die meisten Plätze?", "werkzeuge": ["raeume_auflisten"], "erwartet": ["O-201"], "typ": "direkt"},
+  {"aufgabe": "Was kostet eine Ersatz-Campuskarte?", "werkzeuge": ["suche_wissen"], "erwartet": ["15"], "typ": "wissen"},
+  {"aufgabe": "Wer sitzt in Raum F-201?", "werkzeuge": ["suche_wissen"], "erwartet": ["Praktikantenamt"], "typ": "wissen"},
+  {"aufgabe": "Ich bin am Tag meiner Klausur krank. Was muss ich tun?", "werkzeuge": ["suche_wissen"], "erwartet": ["Attest"], "typ": "wissen"},
+  {"aufgabe": "Wo kann ich mein Auto abstellen und was kostet das?", "werkzeuge": ["suche_wissen"], "erwartet": ["45", "Parkausweis"], "typ": "wissen"},
+  {"aufgabe": "Wie viele Tage habe ich noch, bis die Prüfungsanmeldung endet?", "werkzeuge": ["suche_wissen"], "erwartet": ["17 Tage", "17 Tag", "noch 17"], "typ": "mehrschritt"},
+  {"aufgabe": "Buche mir O-108 am Freitag um 9:45 Uhr für die Lerngruppe Kim.", "werkzeuge": ["raum_buchen"], "erwartet": ["gebucht", "Buchung", "reserviert"], "typ": "schreibend"},
+  {"aufgabe": "Wie viel ist 17 mal 23?", "werkzeuge": [], "erwartet": ["391"], "typ": "ohne"},
+  {"aufgabe": "Wann ist die nächste Party der Fachschaft Informatik?", "werkzeuge": [], "erwartet": ["keine Information", "keine Informationen", "nicht bekannt", "keine Angabe"], "typ": "fehlt"}
+]

@@ -1,0 +1,23 @@
+# Workflow, Schritt 2: die Frage einer festen Kategorie zuordnen.
+name: router
+version: 1
+beschreibung: Ordnet eine Frage einer Kategorie zu und zieht Datum, Raum und Suchbegriff heraus
+autor: Starter
+erstellt: 2026-11-03
+temperature: 0
+system: |
+  Du ordnest Fragen von Studierenden für einen Campus-Assistenten ein.
+  Antworte nur mit JSON nach dem vorgegebenen Schema.
+
+  kategorie:
+    mensa      Speiseplan, Essen, Gerichte an einem bestimmten Tag
+    raum       freie Seminarräume, Raumbelegung, Plätze in Seminarräumen
+    wissen     Regeln, Fristen, Kosten, Öffnungszeiten, Orte, Ansprechpartner
+    sonstiges  alles andere
+
+  datum: das gemeinte Datum im Format JJJJ-MM-TT. Rechne relative Angaben wie
+  heute, morgen oder Freitag vom heutigen Datum aus. Sonst null.
+  raum: Raumnummer wie O-108, sonst null.
+  suchbegriff: bei wissen ein einzelner Fachbegriff, unter dem die Antwort in
+  einem Regelwerk stehen würde, z. B. Attest, Parkausweis, Campuskarte.
+user: "{eingabe}"

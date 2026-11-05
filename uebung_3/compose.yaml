@@ -1,0 +1,52 @@
+services:
+  # Das lokale Modell. Ollama bietet eine OpenAI-kompatible API unter /v1,
+  # inklusive Tool Calling.
+  ollama:
+    image: ollama/ollama:0.35.1
+    volumes:
+      - ollama-modelle:/root/.ollama   # dasselbe Volume wie in Übung 2
+    ports:
+      - "11434:11434"
+
+  # Läuft einmal, lädt die Modelle und beendet sich. Was schon im Volume
+  # liegt (llama3.2:3b aus Übung 1 und 2), wird nicht noch einmal geladen.
+  # Neu ist qwen2.5:3b (ca. 1,9 GB) als zweites Modell mit Tool Calling.
+  modell-laden:
+    image: ollama/ollama:0.35.1
+    environment:
+      - OLLAMA_HOST=ollama:11434
+    entrypoint: ["sh", "-c", "ollama pull llama3.2:3b && ollama pull qwen2.5:3b"]
+    depends_on:
+      - ollama
+
+  # Neu: Werkzeuge als eigener Service. Der MCP-Server bietet Raumbelegung
+  # und Mensa-Speiseplan über das Model Context Protocol an.
+  # Endpunkt für Clients: http://campus-mcp:8000/mcp (im Compose-Netz)
+  # bzw. http://localhost:8000/mcp (von eurem Rechner aus).
+  campus-mcp:
+    build: ./campus_mcp
+    environment:
+      - HEUTE=${HEUTE:-}   # dieselbe feste Uhr wie in der App, aus .env
+    volumes:
+      - ./campus_mcp:/srv   # Änderungen am Server: docker compose restart campus-mcp
+    ports:
+      - "8000:8000"
+
+  # Unser Agent. Welches Modell er nutzt, steht in .env.
+  # Welches Skript läuft, bestimmt ihr beim Aufruf, z. B.:
+  #   docker compose run --rm app agent.py "Was gibt es heute in der Mensa?"
+  app:
+    build: ./app
+    env_file: .env
+    volumes:
+      - ./app:/app   # Code-Änderungen wirken sofort, ohne neuen Build
+    depends_on:
+      modell-laden:
+        condition: service_completed_successfully
+      campus-mcp:
+        condition: service_started
+
+volumes:
+  ollama-modelle:
+    name: cnai-ollama-modelle
+    external: true   # einmal anlegen, siehe Übung 2: docker volume create cnai-ollama-modelle

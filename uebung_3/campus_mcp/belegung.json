@@ -1,0 +1,32 @@
+{
+  "_hinweis": "Ausgedachte Raumbelegung. Pro Raum und Wochentag die belegten Slots mit Grund.",
+  "raeume": {
+    "O-108": {
+      "plaetze": 24,
+      "ausstattung": "Gebäude O, Beamer, Whiteboard",
+      "montag": {"08:00": "Mathematik 1", "11:30": "Programmieren 1"},
+      "dienstag": {"09:45": "Cloud-native AI", "11:30": "Cloud-native AI"},
+      "mittwoch": {"14:00": "Datenbanken"},
+      "donnerstag": {"08:00": "Webapplikationen", "09:45": "Webapplikationen", "14:00": "Tutorium"},
+      "freitag": {}
+    },
+    "O-201": {
+      "plaetze": 40,
+      "ausstattung": "Gebäude O, Beamer, Steckdosen an jedem Platz",
+      "montag": {"09:45": "Theoretische Informatik"},
+      "dienstag": {"08:00": "Software Engineering", "14:00": "Teamprojekt", "15:45": "Teamprojekt"},
+      "mittwoch": {"09:45": "Rechnernetze", "11:30": "Rechnernetze"},
+      "donnerstag": {"11:30": "Betriebssysteme"},
+      "freitag": {"08:00": "Statistik"}
+    },
+    "F-012": {
+      "plaetze": 12,
+      "ausstattung": "Gebäude F, Erdgeschoss, großer Bildschirm, Gruppentisch",
+      "montag": {},
+      "dienstag": {"11:30": "Sprechstunde"},
+      "mittwoch": {"08:00": "Lerngruppe Mathe", "09:45": "Lerngruppe Mathe"},
+      "donnerstag": {},
+      "freitag": {"14:00": "Fachschaftssitzung"}
+    }
+  }
+}
